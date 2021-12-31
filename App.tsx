@@ -1,7 +1,7 @@
 import React from 'react';
 import AppLoading from 'expo-app-loading';
 
-import { Register } from './src/screens/Register/';
+import { CategorySelect } from './src/screens/CategorySelect/';
 
 import {
   useFonts,
@@ -26,7 +26,7 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Register />
+      <CategorySelect />
     </ThemeProvider>
   );
 }
