@@ -33,6 +33,7 @@ export interface DataListProps extends TransactionCardProps {
 
 interface HighLightProps {
   amount: string;
+  lastTransaction: string;
 }
 
 interface HighlightData {
@@ -49,6 +50,23 @@ export function Dashboard() {
   );
 
   const theme = useTheme();
+
+  function getLastTransactionDate(
+    collection: DataListProps[],
+    type: 'positive' | 'negative'
+  ) {
+    const lastTransactions = Math.max.apply(
+      Math,
+      collection
+        .filter(transaction => transaction.type === type)
+        .map(transaction => new Date(transaction.date).getTime())
+    );
+
+    return Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+    }).format(new Date(lastTransactions));
+  }
 
   async function loadTransactions() {
     const dataKey = '@deepfinances:transactions';
@@ -90,6 +108,17 @@ export function Dashboard() {
 
     setTransactions(formattedTransactions);
 
+    const lastTransactionEntries = getLastTransactionDate(
+      transactions,
+      'positive'
+    );
+    const lastTransactionExpenses = getLastTransactionDate(
+      transactions,
+      'negative'
+    );
+
+    const totalInterval = `01 à ${lastTransactionExpenses}`;
+
     const total = entriesTotal - expensesTotal;
     setHighlightData({
       entries: {
@@ -97,18 +126,21 @@ export function Dashboard() {
           style: 'currency',
           currency: 'BRL',
         }),
+        lastTransaction: `Última entrada dia ${lastTransactionEntries}`,
       },
       expenses: {
         amount: expensesTotal.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
         }),
+        lastTransaction: `Última saída dia ${lastTransactionExpenses}`,
       },
       total: {
         amount: total.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
         }),
+        lastTransaction: totalInterval,
       },
     });
 
@@ -158,19 +190,19 @@ export function Dashboard() {
               type='up'
               title='Entradas'
               amount={HighlightData.entries.amount}
-              lastTransaction='Última entrada dia 13 de Abril'
+              lastTransaction={HighlightData.entries.lastTransaction}
             />
             <HighlightCard
               type='down'
               title='Saídas'
               amount={HighlightData.expenses.amount}
-              lastTransaction='Última saída dia 03 de Abril'
+              lastTransaction={HighlightData.expenses.lastTransaction}
             />
             <HighlightCard
               type='total'
               title='Total'
               amount={HighlightData.total.amount}
-              lastTransaction='01 à 16 de Abril'
+              lastTransaction={HighlightData.total.lastTransaction}
             />
           </HighlightCards>
 
