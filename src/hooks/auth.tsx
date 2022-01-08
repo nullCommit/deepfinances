@@ -1,4 +1,10 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useState,
+  useEffect,
+} from 'react';
 import * as AuthSession from 'expo-auth-session';
 // import * as Google from 'expo-google-app-auth';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -36,6 +42,9 @@ const AuthContext = createContext({} as AuthContextData);
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
+  const [userStorageLoading, setUserStorageLoading] = useState(true);
+
+  const userStorageKey = '@deepfinances:user';
 
   async function signInWithGoogle() {
     try {
@@ -62,10 +71,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         };
 
         setUser(userLogged);
-        await AsyncStorage.setItem(
-          '@deepfinances:user',
-          JSON.stringify(userLogged)
-        );
+        await AsyncStorage.setItem(userStorageKey, JSON.stringify(userLogged));
       }
     } catch (error) {
       throw new Error(error as string);
@@ -90,15 +96,27 @@ function AuthProvider({ children }: AuthProviderProps) {
         };
 
         setUser(userLogged);
-        await AsyncStorage.setItem(
-          '@deepfinances:user',
-          JSON.stringify(userLogged)
-        );
+        await AsyncStorage.setItem(userStorageKey, JSON.stringify(userLogged));
       }
     } catch (error) {
       throw new Error(error as string);
     }
   }
+
+  useEffect(() => {
+    async function loadUserStorageData() {
+      const userStored = await AsyncStorage.getItem(userStorageKey);
+
+      if (userStored) {
+        const userLogged = JSON.parse(userStored) as User;
+        setUser(userLogged);
+      }
+
+      setUserStorageLoading(false);
+    }
+
+    loadUserStorageData();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, signInWithGoogle, sighInWithApple }}>
