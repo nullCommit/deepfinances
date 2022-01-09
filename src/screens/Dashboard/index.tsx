@@ -73,7 +73,7 @@ export function Dashboard() {
   }
 
   async function loadTransactions() {
-    const dataKey = '@deepfinances:transactions';
+    const dataKey = `@deepfinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
